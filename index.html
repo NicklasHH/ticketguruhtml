@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>Index</title>
+    <style>
+      body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+      form {
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <h3>Lipuntarkastus</h3>
+    <form>
+      <input type="text" id="käyttäjätunnus" value="scanner" />
+      <input type="text" id="salasana" value="scanner" />
+      <button type="button" onclick="haeToken()">Hae token</button><br /><br />
+
+      <button type="button" onclick="käytäToken()">Kirjaudu tokenilla</button
+      ><br /><br />
+
+      <label for="lipunID">Lipun ID:</label>
+      <input type="text" id="lipunID" value="KANTA-123"/>
+      <button <button type="button" onclick="haeLippu()">Hae lippu</button><br /><br />
+
+      <button <button type="button" onclick="tarkistaLippu()">Tarkista lippu</button
+    </form>
+  </body>
+</html>
+<script>
+  let tokenData;
+  let bearerToken;
+  let lippuId;
+
+  function haeToken() {
+    tokenData = {
+      user: document.getElementById("käyttäjätunnus").value,
+      password: document.getElementById("salasana").value,
+    };
+    console.log(tokenData);
+  }
+
+  function käytäToken() {
+    console.log(tokenData);
+    fetch("http://ticketguru-ticketmaster.rahtiapp.fi/api/auth/login", {
+      method: "POST",
+      body: tokenData,
+    })
+      .then((response) => {
+        if (response.ok) {
+          return response.json();
+        } else {
+          throw new Error("Virheellinen vastaus API:sta");
+        }
+      })
+      .then((data) => {
+        if (data && data.token) {
+          bearerToken = data.token;
+          console.log("Saatu Bearer Token:", bearerToken);
+        } else {
+          console.error("Virhe: Tokenia ei saatu API-vastauksesta");
+        }
+      })
+      .catch((error) => {
+        console.error("Virhe:", error);
+      });
+  }
+  function haeLippu() {
+    console.log(bearerToken)
+    lippuId = {
+        "ticketcode": document.getElementById("lipunID").value,
+    };
+    console.log(lippuId)
+
+    fetch("http://ticketguru-ticketmaster.rahtiapp.fi/api/auth/login", {
+      method: "GET",
+      body: lippuId,
+    })
+      .then((response) => {
+        if (response.ok) {
+          return response.json();
+        } else {
+          throw new Error("Virheellinen vastaus API:sta");
+        }
+      })
+      .catch((error) => {
+        console.error("Virhe:", error);
+      });
+  }
+  function tarkistaLippu() {
+    console.log(tokenData)
+    console.log(bearerToken)
+    console.log(lippuId)
+  }
+</script>
