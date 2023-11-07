@@ -4,6 +4,9 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <title>Index</title>
     <style>
+      #lippu {
+        display: none;
+      }
       body {
         display: flex;
         flex-direction: column;
@@ -13,27 +16,64 @@
       form {
         text-align: center;
       }
+      div {
+        display: inline-block;
+      }
+      div label {
+        display: block;
+      }
+      input {
+        text-align: center;
+      }
     </style>
   </head>
   <body>
     <h3>Lipuntarkastus</h3>
-    <form>
-      <input type="text" id="käyttäjätunnus" value="admin" />
-      <input type="text" id="salasana" value="admin" /><br /><br />
-
-      <label for="lipunID">Lipun ID:</label>
-      <input type="text" id="lipunID" value="1" />
-
-      <button <button type="button" onclick="tarkistaLippu()">
-        Tarkista lippu
-      </button>
+    <form id="tunnus">
+      <div>
+        <label for="käyttäjätunnus">Käyttäjätunnus:</label>
+        <input type="text" id="käyttäjätunnus" placeholder="admin" />
+      </div>
+      <div>
+        <label for="salasana">Salasana:</label>
+        <input type="text" id="salasana" placeholder="admin" />
+      </div>
+      <br /><br />
+      <button type="button" onclick="check()">Check</button><br /><br />
     </form>
+
+    <form id="lippu">
+      <div>
+        <label for="lipunID">Lipun ID:</label>
+        <input type="text" id="lipunID" />
+      </div>
+      <button type="button" onclick="tarkistaLippu()">Tarkista lippu</button>
+    </form>
+
+    <div id="lippu-ok" style="display: none; font-size: 24px; margin-top: 10px">
+      Lippu tarkistettu
+    </div>
   </body>
 </html>
 <script>
+  let username;
+  let password;
+  let lippuId;
+
+  function check() {
+    username = document.getElementById("käyttäjätunnus").value;
+    password = document.getElementById("salasana").value;
+
+    if (username && password) {
+      document.getElementById("tunnus").style.display = "none";
+      document.getElementById("lippu").style.display = "block";
+    } else {
+      document.getElementById("tunnus").style.display = "block";
+      document.getElementById("lippu").style.display = "none";
+    }
+  }
+
   function tarkistaLippu() {
-    const username = document.getElementById("käyttäjätunnus").value;
-    const password = document.getElementById("salasana").value;
     const lippuId = document.getElementById("lipunID").value;
     const url = `http://ticketguru-ohjelmistoprojekti.rahtiapp.fi/api/tickets/${lippuId}/check`;
     const base64Credentials = btoa(`${username}:${password}`);
@@ -47,6 +87,7 @@
       .then((response) => {
         console.log("Palautuskoodi:", response.status);
         if (response.ok) {
+          document.getElementById("lippu-ok").style.display = "block";
           return response.json();
         } else {
           throw new Error("Virheellinen vastaus API:sta");
@@ -55,5 +96,9 @@
       .catch((error) => {
         console.error("Virhe:", error);
       });
+    setTimeout(() => {
+      document.getElementById("lipunID").value = "";
+      document.getElementById("lippu-ok").style.display = "none";
+    }, 5000);
   }
 </script>
