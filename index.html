@@ -85,7 +85,7 @@
 
   function haeTiedot() {
     const lippuId = document.getElementById("lipunID").value;
-    const url = `http://ticketguru-ohjelmistoprojekti.rahtiapp.fi/api/tickets/${lippuId}`;
+    const url = `https://ticketguru-ohjelmistoprojekti.rahtiapp.fi/api/tickets/${lippuId}`;
     const base64Credentials = btoa(`${username}:${password}`);
 
     fetch(url, {
@@ -115,7 +115,7 @@
 
   function tarkistaLippu() {
     const lippuId = document.getElementById("lipunID").value;
-    const url = `http://ticketguru-ohjelmistoprojekti.rahtiapp.fi/api/tickets/${lippuId}/check`;
+    const url = `https://ticketguru-ohjelmistoprojekti.rahtiapp.fi/api/tickets/${lippuId}/check`;
     const base64Credentials = btoa(`${username}:${password}`);
 
     fetch(url, {
