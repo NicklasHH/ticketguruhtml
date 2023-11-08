@@ -29,11 +29,16 @@
     <form id="tunnus">
       <div>
         <label for="käyttäjätunnus">Käyttäjätunnus:</label>
-        <input type="text" id="käyttäjätunnus" placeholder="admin" />
+        <input
+          type="text"
+          id="käyttäjätunnus"
+          placeholder="admin"
+          value="admin"
+        />
       </div>
       <div>
         <label for="salasana">Salasana:</label>
-        <input type="text" id="salasana" placeholder="admin" />
+        <input type="text" id="salasana" placeholder="admin" value="admin" />
       </div>
       <br /><br />
       <button type="button" onclick="check()">Check</button><br /><br />
@@ -44,12 +49,20 @@
         <label for="lipunID">Lipun ID:</label>
         <input type="text" id="lipunID" />
       </div>
-      <button type="button" onclick="tarkistaLippu()">Tarkista lippu</button>
+      <br /><br />
+      <button type="button" onclick="haeTiedot()">Hae lipun tiedot</button>
+      <button type="button" onclick="tarkistaLippu()">
+        Merkitse tarkistetuksi
+      </button>
     </form>
 
     <div id="lippu-ok" style="display: none; font-size: 24px; margin-top: 10px">
       Lippu tarkistettu
     </div>
+    <div
+      id="tiedot"
+      style="display: none; font-size: 16px; margin-top: 10px; white-space: pre"
+    ></div>
   </body>
 </html>
 <script>
@@ -68,6 +81,36 @@
       document.getElementById("tunnus").style.display = "block";
       document.getElementById("lippu").style.display = "none";
     }
+  }
+
+  function haeTiedot() {
+    const lippuId = document.getElementById("lipunID").value;
+    const url = `http://ticketguru-ohjelmistoprojekti.rahtiapp.fi/api/tickets/${lippuId}`;
+    const base64Credentials = btoa(`${username}:${password}`);
+
+    fetch(url, {
+      method: "GET",
+      headers: {
+        Authorization: `Basic ${base64Credentials}`,
+      },
+    })
+      .then((response) => {
+        console.log("Haettujen tietojen palautuskoodi:", response.status);
+        if (response.ok) {
+          return response.json();
+        } else {
+          throw new Error("Virheellinen vastaus API:sta");
+        }
+      })
+      .then((data) => {
+        console.log("Haetut tiedot:", data);
+        const tiedotDiv = document.getElementById("tiedot");
+        tiedotDiv.textContent = JSON.stringify(data, null, 2);
+        tiedotDiv.style.display = "block";
+      })
+      .catch((error) => {
+        console.error("Virhe:", error);
+      });
   }
 
   function tarkistaLippu() {
@@ -96,6 +139,7 @@
     setTimeout(() => {
       document.getElementById("lipunID").value = "";
       document.getElementById("lippu-ok").style.display = "none";
+      document.getElementById("tiedot").style.display = "none";
     }, 5000);
   }
 </script>
