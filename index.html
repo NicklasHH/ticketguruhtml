@@ -29,12 +29,7 @@
     <form id="tunnus">
       <div>
         <label for="käyttäjätunnus">Käyttäjätunnus:</label>
-        <input
-          type="text"
-          id="käyttäjätunnus"
-          placeholder="admin"
-          value="admin"
-        />
+        <input type="text" id="käyttäjätunnus" placeholder="admin" value="admin" />
       </div>
       <div>
         <label for="salasana">Salasana:</label>
@@ -51,18 +46,13 @@
       </div>
       <br /><br />
       <button type="button" onclick="haeTiedot()">Hae lipun tiedot</button>
-      <button type="button" onclick="tarkistaLippu()">
-        Merkitse tarkistetuksi
-      </button>
+      <button type="button" onclick="tarkistaLippu()">Merkitse tarkistetuksi</button>
     </form>
 
     <div id="lippu-ok" style="display: none; font-size: 24px; margin-top: 10px">
       Lippu tarkistettu
     </div>
-    <div
-      id="tiedot"
-      style="display: none; font-size: 16px; margin-top: 10px; white-space: pre"
-    ></div>
+    <div id="tiedot" style="display: none; font-size: 16px; margin-top: 10px"></div>
   </body>
 </html>
 <script>
@@ -84,7 +74,7 @@
   }
 
   function haeTiedot() {
-    const lippuId = document.getElementById("lipunID").value;
+    lippuId = document.getElementById("lipunID").value;
     const url = `https://ticketguru-ohjelmistoprojekti.rahtiapp.fi/api/tickets/${lippuId}`;
     const base64Credentials = btoa(`${username}:${password}`);
 
@@ -95,7 +85,6 @@
       },
     })
       .then((response) => {
-        console.log("Haettujen tietojen palautuskoodi:", response.status);
         if (response.ok) {
           return response.json();
         } else {
@@ -103,10 +92,27 @@
         }
       })
       .then((data) => {
-        console.log("Haetut tiedot:", data);
-        const tiedotDiv = document.getElementById("tiedot");
-        tiedotDiv.textContent = JSON.stringify(data, null, 2);
-        tiedotDiv.style.display = "block";
+        const lipunTiedot = document.getElementById("tiedot");
+
+        // Tähän voi määritellä mitä tietoja halutaan näyttää
+        const valitutTiedot = {
+          "Lipun numero": data.ticketId,
+          "Tapahtuman nimi": data.event.eventName,
+          Tapahtumapaikka: data.event.venue.place,
+          Osoite: data.event.venue.streetAddress,
+          Postinumero: data.event.venue.postalcode.postalcode,
+          Postitoimipaikka: data.event.venue.postalcode.postOffice,
+          "Onko tarkistettu": data.isChecked,
+          Lipputyyppi: data.ticketType.ticketType,
+          "Lipun hinta": data.ticketType.price + " €",
+          "Onko maksettu": data.transaction.transactionOk,
+        };
+        let htmlContent = "";
+        for (const key in valitutTiedot) {
+          htmlContent += `<strong>${key}:</strong> ${valitutTiedot[key]}<br>`;
+        }
+        lipunTiedot.innerHTML = htmlContent;
+        lipunTiedot.style.display = "block";
       })
       .catch((error) => {
         console.error("Virhe:", error);
@@ -114,7 +120,7 @@
   }
 
   function tarkistaLippu() {
-    const lippuId = document.getElementById("lipunID").value;
+    lippuId = document.getElementById("lipunID").value;
     const url = `https://ticketguru-ohjelmistoprojekti.rahtiapp.fi/api/tickets/${lippuId}/check`;
     const base64Credentials = btoa(`${username}:${password}`);
 
