@@ -1,70 +1,66 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <title>Index</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <title>Lipuntarkastus</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+
     <style>
-      body {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-      }
-      form {
-        text-align: center;
-      }
       div {
         display: inline-block;
         text-align: center;
-      }
-      div label {
-        display: block;
       }
       input {
         text-align: center;
       }
     </style>
   </head>
-  <body>
+  <body class="text-center">
     <h1>Lipuntarkastus</h1>
+
     <form id="tunnus">
-      <div>
+      <div class="form-group">
         <label for="käyttäjätunnus">Käyttäjätunnus:</label>
-        <input type="text" id="käyttäjätunnus" placeholder="admin" value="admin" />
+        <input class="form-control border-secondary" id="käyttäjätunnus" value="admin" />
       </div>
-      <div>
+      <div class="form-group">
         <label for="salasana">Salasana:</label>
-        <input type="text" id="salasana" placeholder="admin" value="admin" />
+        <input class="form-control border-secondary" id="salasana" value="admin" />
       </div>
       <br /><br />
-      <button type="button" onclick="check()">Check</button><br /><br />
+      <button type="button" onclick="check()" class="btn btn-secondary">Check</button><br /><br />
     </form>
 
     <form id="lippu" style="display: none">
-      <div>
+      <div class="form-group">
         <label for="lipunID">Lipun ID:</label>
-        <input type="text" id="lipunID" value="1" />
+        <input class="form-control border-secondary" id="lipunID" value="1" />
       </div>
       <br /><br />
-      <button type="button" onclick="haeTiedot()">Hae lipun tiedot</button>
-      <button type="button" onclick="tarkistaLippu()">Merkitse tarkistetuksi</button>
+      <button type="button" onclick="haeTiedot()" class="btn btn-secondary">
+        Hae lipun tiedot
+      </button>
+      <button type="button" onclick="tarkistaLippu()" class="btn btn-secondary">
+        Merkitse tarkistetuksi
+      </button>
     </form>
 
-    <div id="tietodiv" style="display: none; margin-top: 50px">
+    <div id="lipunTiedot" style="display: none; margin-top: 20px">
       <h3>Lipun tiedot</h3>
-
-      <div id="qr" style="display: block"></div>
+      <div id="qr-koodi" style="display: block"></div>
       <div id="tiedot" style="display: block; font-size: 16px"></div>
-    </div>
-    <div id="lippu-ok" style="display: none; font-size: 24px; margin-top: 10px">
-      Lippu tarkistettu
+      <h2 id="lippuCheck" style="display: none; margin-top: 10px">Lippu tarkistettu</h2>
     </div>
   </body>
 </html>
+
 <script>
   let username;
   let password;
   let lippuId;
+  let base64Credentials;
+  let url;
 
   function check() {
     username = document.getElementById("käyttäjätunnus").value;
@@ -77,13 +73,12 @@
       document.getElementById("tunnus").style.display = "block";
       document.getElementById("lippu").style.display = "none";
     }
+    base64Credentials = btoa(`${username}:${password}`);
   }
 
   function haeTiedot() {
     lippuId = document.getElementById("lipunID").value;
-    const url = `https://ticketguru-ohjelmistoprojekti.rahtiapp.fi/api/tickets/${lippuId}`;
-    const base64Credentials = btoa(`${username}:${password}`);
-
+    url = `https://ticketguru-ohjelmistoprojekti.rahtiapp.fi/api/tickets/${lippuId}`;
     fetch(url, {
       method: "GET",
       headers: {
@@ -91,7 +86,12 @@
       },
     })
       .then((response) => {
-        if (response.ok) {
+        if (response.status === 404) {
+          document.getElementById("tiedot").innerHTML = "Lippua ei löytynyt";
+          document.getElementById("tiedot").style.display = "block";
+          document.getElementById("qr-koodi").innerHTML = "";
+          throw new Error("Lippua ei löytynyt");
+        } else if (response.ok) {
           return response.json();
         } else {
           throw new Error("Virheellinen vastaus API:sta");
@@ -99,8 +99,7 @@
       })
       .then((data) => {
         const lipunTiedot = document.getElementById("tiedot");
-
-        const lipunTiedotDiv = document.getElementById("tietodiv");
+        const lipunTiedotDiv = document.getElementById("lipunTiedot");
 
         // Tähän voi määritellä mitä tietoja halutaan näyttää
         const valitutTiedot = {
@@ -130,9 +129,7 @@
   }
 
   function haeQr() {
-    lippuId = document.getElementById("lipunID").value;
-    const url = `https://ticketguru-ohjelmistoprojekti.rahtiapp.fi/api/tickets/qr/${lippuId}`;
-    const base64Credentials = btoa(`${username}:${password}`);
+    url = `https://ticketguru-ohjelmistoprojekti.rahtiapp.fi/api/tickets/qr/${lippuId}`;
     fetch(url, {
       method: "GET",
       headers: {
@@ -150,7 +147,7 @@
         const imageUrl = URL.createObjectURL(data);
         const imageElement = document.createElement("img");
         imageElement.src = imageUrl;
-        const container = document.getElementById("qr");
+        const container = document.getElementById("qr-koodi");
         container.replaceChildren(imageElement);
       })
       .catch((error) => {
@@ -159,10 +156,7 @@
   }
 
   function tarkistaLippu() {
-    lippuId = document.getElementById("lipunID").value;
-    const url = `https://ticketguru-ohjelmistoprojekti.rahtiapp.fi/api/tickets/${lippuId}/check`;
-    const base64Credentials = btoa(`${username}:${password}`);
-
+    url = `https://ticketguru-ohjelmistoprojekti.rahtiapp.fi/api/tickets/${lippuId}/check`;
     fetch(url, {
       method: "PATCH",
       headers: {
@@ -172,7 +166,7 @@
       .then((response) => {
         console.log("Palautuskoodi:", response.status);
         if (response.ok) {
-          document.getElementById("lippu-ok").style.display = "block";
+          document.getElementById("lippuCheck").style.display = "block";
           return response.json();
         } else {
           throw new Error("Virheellinen vastaus API:sta");
@@ -183,8 +177,8 @@
       });
     setTimeout(() => {
       document.getElementById("lipunID").value = "";
-      document.getElementById("lippu-ok").style.display = "none";
-      document.getElementById("tietodiv").style.display = "none";
+      document.getElementById("lippuCheck").style.display = "none";
+      document.getElementById("lipunTiedot").style.display = "none";
     }, 5000);
   }
 </script>
