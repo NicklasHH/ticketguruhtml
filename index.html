@@ -65,7 +65,6 @@
   let username;
   let password;
   let lippuId;
-  let qrurl = "http://localhost:8080/api/tickets/qr/" + lippuId;
 
   function check() {
     username = document.getElementById("käyttäjätunnus").value;
@@ -185,7 +184,6 @@
     setTimeout(() => {
       document.getElementById("lipunID").value = "";
       document.getElementById("lippu-ok").style.display = "none";
-      document.getElementById("tiedot").style.display = "none";
       document.getElementById("tietodiv").style.display = "none";
     }, 5000);
   }
