@@ -132,7 +132,7 @@
 
   function haeQr() {
     lippuId = document.getElementById("lipunID").value;
-    const url = `https://ticketguru-ohjelmistoprojekti.rahtiapp.fi/tickets/qr/${lippuId}`;
+    const url = `https://ticketguru-ohjelmistoprojekti.rahtiapp.fi/api/tickets/qr/${lippuId}`;
     const base64Credentials = btoa(`${username}:${password}`);
     fetch(url, {
       method: "GET",
