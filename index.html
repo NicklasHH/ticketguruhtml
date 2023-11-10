@@ -15,6 +15,7 @@
       }
       div {
         display: inline-block;
+        text-align: center;
       }
       div label {
         display: block;
@@ -25,7 +26,7 @@
     </style>
   </head>
   <body>
-    <h3>Lipuntarkastus</h3>
+    <h1>Lipuntarkastus</h1>
     <form id="tunnus">
       <div>
         <label for="käyttäjätunnus">Käyttäjätunnus:</label>
@@ -42,23 +43,29 @@
     <form id="lippu" style="display: none">
       <div>
         <label for="lipunID">Lipun ID:</label>
-        <input type="text" id="lipunID" value="1"/>
+        <input type="text" id="lipunID" value="1" />
       </div>
       <br /><br />
       <button type="button" onclick="haeTiedot()">Hae lipun tiedot</button>
       <button type="button" onclick="tarkistaLippu()">Merkitse tarkistetuksi</button>
     </form>
 
+    <div id="tietodiv" style="display: none; margin-top: 50px">
+      <h3>Lipun tiedot</h3>
+
+      <div id="qr" style="display: block"></div>
+      <div id="tiedot" style="display: block; font-size: 16px"></div>
+    </div>
     <div id="lippu-ok" style="display: none; font-size: 24px; margin-top: 10px">
       Lippu tarkistettu
     </div>
-    <div id="tiedot" style="display: none; font-size: 16px; margin-top: 10px"></div>
   </body>
 </html>
 <script>
   let username;
   let password;
   let lippuId;
+  let qrurl = "http://localhost:8080/api/tickets/qr/" + lippuId;
 
   function check() {
     username = document.getElementById("käyttäjätunnus").value;
@@ -94,6 +101,8 @@
       .then((data) => {
         const lipunTiedot = document.getElementById("tiedot");
 
+        const lipunTiedotDiv = document.getElementById("tietodiv");
+
         // Tähän voi määritellä mitä tietoja halutaan näyttää
         const valitutTiedot = {
           "Lipun numero": data.ticketId,
@@ -112,7 +121,38 @@
           htmlContent += `<strong>${key}:</strong> ${valitutTiedot[key]}<br>`;
         }
         lipunTiedot.innerHTML = htmlContent;
-        lipunTiedot.style.display = "block";
+
+        lipunTiedotDiv.style.display = "block";
+        haeQr();
+      })
+      .catch((error) => {
+        console.error("Virhe:", error);
+      });
+  }
+
+  function haeQr() {
+    lippuId = document.getElementById("lipunID").value;
+    const url = `https://ticketguru-ohjelmistoprojekti.rahtiapp.fi/tickets/qr/${lippuId}`;
+    const base64Credentials = btoa(`${username}:${password}`);
+    fetch(url, {
+      method: "GET",
+      headers: {
+        Authorization: `Basic ${base64Credentials}`,
+      },
+    })
+      .then((response) => {
+        if (response.ok) {
+          return response.blob();
+        } else {
+          throw new Error("Virheellinen vastaus API:sta");
+        }
+      })
+      .then((data) => {
+        const imageUrl = URL.createObjectURL(data);
+        const imageElement = document.createElement("img");
+        imageElement.src = imageUrl;
+        const container = document.getElementById("qr");
+        container.replaceChildren(imageElement);
       })
       .catch((error) => {
         console.error("Virhe:", error);
@@ -146,6 +186,7 @@
       document.getElementById("lipunID").value = "";
       document.getElementById("lippu-ok").style.display = "none";
       document.getElementById("tiedot").style.display = "none";
+      document.getElementById("tietodiv").style.display = "none";
     }, 5000);
   }
 </script>
